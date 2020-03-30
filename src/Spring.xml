@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+   <!-- &lt;!&ndash;Component相当于在xml中配置bean&ndash;&gt;
+    <context:annotation-config />
+    &lt;!&ndash;扫描&ndash;&gt;
+    <context:component-scan base-package="com.lwy" />-->
+    <!--配置目标bean采用实现jdk代理的方式-->
+    <bean id="userService" class="com.lwy.service.UserService"></bean>
+    <bean id="studentService" class="com.lwy.service.StudentService"></bean>
+    <!--配置切面类-->
+    <bean id="myAspect" class="com.lwy.aspect.MyAspect"></bean>
+    <!--配置代理bean-->
+    <bean id="UserProxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <!--接口-->
+        <property name="interfaces" value="com.lwy.service.IUserService"></property>
+        <!--目标类-->
+        <property name="target" ref="userService"></property>
+        <!--切面类-->
+        <property name="interceptorNames" value="myAspect"></property>
+        <!--实现cglib代理模式-->
+        <property name="optimize" value="true"></property>
+    </bean>
+    <!--
+    proxy-target-class="true"这里默认是使用cglib的代理方式
+    expression: execution(* com.lwy.service.*.*(..))
+                execution执行          返回值 包名 类名 参数名 (..)参数值
+    -->
+    <!--<aop:config proxy-target-class="true">
+        &lt;!&ndash;配置切入点&ndash;&gt;
+        <aop:pointcut id="myPointcut" expression="execution(* com.lwy.service.*.*(..))"></aop:pointcut>
+        &lt;!&ndash;配置增强 关联切入点&ndash;&gt;
+        <aop:advisor advice-ref="myAspect" pointcut-ref="myPointcut"></aop:advisor>
+    </aop:config>-->
+
+    <bean id="myAspect2" class="com.lwy.aspect.MyAspect2"></bean>
+    <!--配置aop-->
+    <aop:config>
+        <aop:aspect id="myAspect" ref="myAspect2">
+            <aop:pointcut id="myPoint" expression="execution(* com.lwy.service.UserService.*())"/>
+            <aop:before method="before" pointcut-ref="myPoint"/>
+            <aop:after method="after" pointcut-ref="myPoint"/>
+        </aop:aspect>
+    </aop:config>
+
+</beans>
